@@ -1,0 +1,2 @@
+# wildstar-mooooo
+WildStar Addon
