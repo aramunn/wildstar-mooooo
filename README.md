@@ -1,2 +1,2 @@
 # wildstar-mooooo
-WildStar Addon
+Mooos for MoOs
