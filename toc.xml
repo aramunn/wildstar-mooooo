@@ -1,0 +1,3 @@
+<Addon Author="Aramunn" APIVersion="13" Version="@project-version@" Name="MoOooo" Description="Mooos for MoOs">
+  <Script Name="MoOooo.lua"/>
+</Addon>
