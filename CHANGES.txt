@@ -1,1 +1,1 @@
-New in 13.3.mooo: initial release
+New in 13.4.mooo: ignore player's self casts
