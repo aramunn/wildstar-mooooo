@@ -5,9 +5,9 @@ local MoOooo = {}
 
 local ktSaveDefault = {
   bEnabled      = true,
-  nMoooTimeout  = 3,
+  nMoooTimeout  = 2,
   eRankMin      = Unit.CodeEnumRank.Champion,
-  bTargetOnly   = false,
+  bBlinders     = false,
 }
 
 local knMoooFiles = 13
@@ -31,6 +31,27 @@ local ktCommands = {
     end,
   },
   {
+    strCmd = "minrank",
+    strDescription = "minimun mob rank to bother moooing at",
+    funcCmd = function(ref, strParam)
+      if strParam == "" then
+        Print("Available Ranks:")
+        for _, tRank in ipairs(ref.arrRanks) do
+          Print(kstrIndent.."["..tostring(tRank.nRank).."] "..tRank.strName)
+        end
+      else
+        for _, tRank in ipairs(ref.arrRanks) do
+          if strParam == tostring(tRank.nRank) or strParam == string.lower(tRank.strName) then
+            ref.tSave.eRankMin = tRank.nRank
+            Print("Set minrank to ["..tostring(tRank.nRank).."] "..tRank.strName)
+            return
+          end
+        end
+        Print("Angus asks what a \""..strParam.."\" is")
+      end
+    end,
+  },
+  {
     strCmd = "timeout",
     strDescription = "time cows need to catch breath (in seconds)",
     funcCmd = function(ref, strParam)
@@ -44,42 +65,33 @@ local ktCommands = {
     end,
   },
   {
-    strCmd = "minrank",
-    strDescription = "minimun mob rank to bother moooing at",
-    funcCmd = function(ref, strParam)
-      if strParam == "" then
-        Print("Available Ranks:")
-        for strRank, nRank in pairs(Unit.CodeEnumRank) do
-          Print(kstrIndent.."["..tostring(nRank).."] "..strRank)
-        end
-      else
-        local eRank = Unit.CodeEnumRank[strParam]
-        eRank = eRank or Unit.CodeEnumRank[ref:GetStrRank(tonumber(strParam))]
-        if eRank then
-          ref.tSave.eRankMin = eRank
-          Print("Set minrank to ["..tostring(eRank).."] "..ref:GetStrRank(eRank))
-        else
-          Print("Angus asks what a \""..strParam.."\" is")
-        end
-      end
-    end,
-  },
-  {
-    strCmd = "targetonly",
+    strCmd = "blinders",
     strDescription = "only mooo for target/focus",
     funcCmd = function(ref, strParam)
-      Print("TODO")
+      if strParam == "on" then
+        ref.tSave.bBlinders = true
+        Print("Blinders on!")
+      elseif strParam == "off" then
+        ref.tSave.bBlinders = false
+        Print("Blinders off")
+      else
+        Print("Use \"blinders on\" or \"blinders off\"")
+      end
     end,
   },
 }
 
 local bPlayedMooo = false
 
-function MoOooo:GetStrRank(eRank)
-  for strRank, nRank in pairs(Unit.CodeEnumRank) do
-    if nRank == eRank then return strRank end
+function MoOooo:FillRanks()
+  self.arrRanks = {}
+  for strName, nRank in pairs(Unit.CodeEnumRank) do
+    table.insert(self.arrRanks, {
+      nRank   = nRank,
+      strName = strName,
+    })
   end
-  return "Unknown"
+  table.sort(self.arrRanks, function(a, b) return a.nRank > b.nRank end)
 end
 
 function MoOooo:OnMoooingTimeout()
@@ -96,9 +108,9 @@ end
 function MoOooo:OnCombatLogInterrupted(tData)
   if not self.tSave.bEnabled then return end
   local bPlayMooo = tData.unitTarget and tData.unitTarget:GetRank() >= self.tSave.eRankMin
-  if self.tSave.bTargetOnly then
-    bPlayMooo = bPlayMooo and GameLib.GetPlayerUnit():GetTargetUnit() == tData.unitTarget
-    bPlayMooo = bPlayMooo and GameLib.GetPlayerUnit():GetAlternateTarget() == tData.unitTarget
+  if bPlayMooo and self.tSave.bBlinders then
+    bPlayMooo = GameLib.GetPlayerUnit():GetAlternateTarget() == tData.unitTarget
+    bPlayMooo = bPlayMooo or GameLib.GetPlayerUnit():GetTarget() == tData.unitTarget
   end
   if bPlayMooo then self:PlayMoooSound() end
 end
@@ -108,11 +120,11 @@ function MoOooo:PrintHelp()
   for _, tCmdData in pairs(ktCommands) do
     Print(kstrIndent..tCmdData.strCmd.." - "..tCmdData.strDescription)
   end
-  Print("Current Settings:")
-  Print(kstrIndent..(self.tSave.bEnabled and "Enabled" or "Disabled"))
-  Print(kstrIndent.."Timeout = "..(tostring(self.tSave.nMoooTimeout)))
-  Print(kstrIndent.."Min Rank = ["..tostring(self.tSave.eRankMin).."] "..(self:GetStrRank(self.tSave.eRankMin)))
-  if self.tSave.bTargetOnly then Print(kstrIndent.."Target/Focus Only") end
+  local strCurrent = self.tSave.bEnabled and "Enabled" or "Disabled"
+  strCurrent = strCurrent..", ".."timeout = "..tostring(self.tSave.nMoooTimeout)
+  strCurrent = strCurrent..", ".."minrank = "..tostring(self.tSave.eRankMin)
+  if self.tSave.bBlinders then strCurrent = strCurrent..", Blinders" end
+  Print("Current Settings: "..strCurrent)
 end
 
 function MoOooo:OnSlashCommand(strCmd, strParam)
@@ -151,6 +163,7 @@ end
 
 function MoOooo:Init()
   self.tSave = ktSaveDefault
+  self:FillRanks()
   Apollo.RegisterAddon(self)
 end
 
