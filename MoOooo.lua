@@ -91,9 +91,6 @@ function MoOooo:PlayMoooSound()
   self.timer = ApolloTimer.Create(self.tSave.nMoooTimeout, false, "OnMoooingTimeout", self)
   local strSound = string.format("Mooos\\mooo%02d.wav", math.random(knMoooFiles))
   Sound.PlayFile(strSound)
-  --@debug@
-  Print("MoOoooing with "..strSound)
-  --@end-debug@
 end
 
 function MoOooo:OnCombatLogInterrupted(tData)
@@ -105,14 +102,6 @@ function MoOooo:OnCombatLogInterrupted(tData)
   end
   if bPlayMooo then self:PlayMoooSound() end
 end
-
---@debug@
-function MoOooo:OnTargetUnitChanged(unitTarget)
-  if unitTarget and unitTarget:GetRank() >= self.tSave.eRankMin then
-    Print("MoOooo: target rank = "..tostring(unitTarget:GetRank()))
-  end
-end
---@end-debug@
 
 function MoOooo:PrintHelp()
   Print("MoOooo by Aramunn - v@project-version@")
@@ -134,9 +123,6 @@ function MoOooo:OnSlashCommand(strCmd, strParam)
     strOptions = string.sub(strParam, nSplitIndex + 1)
     strParam = string.sub(strParam, 1, nSplitIndex - 1)
   end
-  --@debug@
-  Print("MoOooo: Got strParam = "..strParam.." and strOptions = "..strOptions)
-  --@end-debug@
   local funcCmd
   for _, tCmdData in pairs(ktCommands) do
     if strParam == tCmdData.strCmd then funcCmd = tCmdData.funcCmd end
@@ -171,9 +157,6 @@ end
 function MoOooo:OnLoad()
   Apollo.RegisterSlashCommand("mooo", "OnSlashCommand", self)
   Apollo.RegisterEventHandler("CombatLogInterrupted", "OnCombatLogInterrupted", self)
-  --@debug@
-  Apollo.RegisterEventHandler("TargetUnitChanged", "OnTargetUnitChanged", self)
-  --@end-debug@
 end
 
 local MoOoooInst = MoOooo:new()
