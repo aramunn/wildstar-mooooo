@@ -109,7 +109,7 @@ function MoOooo:OnCombatLogInterrupted(tData)
   if not self.tSave.bEnabled then return end
   local bPlayMooo = tData.unitTarget and tData.unitTarget:GetRank() >= self.tSave.eRankMin
   local unitPlayer = GameLib.GetPlayerUnit()
-  if tData.unitTarget == unitPlayer then return end
+  if tData.unitTarget:GetDispositionTo(unitPlayer) ~= Unit.CodeEnumDisposition.Hostile then return end
   if bPlayMooo and self.tSave.bBlinders then
     bPlayMooo = tData.unitTarget == unitPlayer:GetAlternateTarget()
     bPlayMooo = bPlayMooo or tData.unitTarget == unitPlayer:GetTarget()
