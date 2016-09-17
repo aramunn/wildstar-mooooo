@@ -1,1 +1,2 @@
+New in 13.5.mooo: bug fix for invalid unit
 New in 13.4.mooo: ignore player's self casts
