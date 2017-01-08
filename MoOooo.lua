@@ -116,9 +116,6 @@ function MoOooo:OnCombatLogInterrupted(tData)
       or tData.unitTarget == unitPlayer:GetTarget()
   ) then return end
   self:PlayMoooSound()
-  --@debug@
-  Print("Moooed for "..tData.unitTarget:GetName().." because "..tostring(tData.strCastResult))
-  --@end-debug@
 end
 
 function MoOooo:PrintHelp()
